@@ -1,5 +1,3 @@
-
-//claude
 import { useState, useEffect, useRef } from "react";
 import api from "./api";       // axios instance — baseURL = VITE_STORE_API
 
@@ -47,11 +45,9 @@ if (!document.getElementById("prottiva-styles")) {
     .scrollbar-hide::-webkit-scrollbar{display:none}
     .glass{background:rgba(255,255,255,.85);backdrop-filter:blur(16px)}
     .glow-border{border:2px solid transparent;background-clip:padding-box}
-    /* Glow-up comparison slider */
     .compare-wrapper{position:relative;overflow:hidden;border-radius:1.5rem;cursor:ew-resize;user-select:none}
     .compare-after{position:absolute;inset:0;overflow:hidden}
     .compare-handle{position:absolute;top:0;bottom:0;width:3px;background:white;cursor:ew-resize;z-index:10}
-    .compare-handle::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32px;height:32px;background:white;border-radius:50%;box-shadow:0 2px 12px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center}
   `;
   document.head.appendChild(s);
 }
@@ -131,7 +127,7 @@ function Navbar({ page, setPage, cart, wishlist, user, setAuthModal }) {
     ? allProducts.filter(p => p.name?.toLowerCase().includes(search.toLowerCase()) || p.cat?.toLowerCase().includes(search.toLowerCase()))
     : [];
 
-  const navLinks = ["Home","Shop","Skin Test","Glow-Up","About","Contact"];
+  const navLinks = ["Home","Shop","Skin Test","About","Contact"];
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scroll?"bg-white shadow-md":"glass"} border-b border-emerald-100/60`}>
@@ -143,9 +139,7 @@ function Navbar({ page, setPage, cart, wishlist, user, setAuthModal }) {
             <li key={l}>
               <button onClick={() => setPage(l)}
                 className={`text-sm font-medium transition-all px-1 pb-0.5 ${page===l?"text-emerald-600 border-b-2 border-emerald-500":"text-slate-600 hover:text-emerald-600"}`}>
-                {l==="Skin Test" ? <span className="flex items-center gap-1.5">🔬{l}<span className="text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">AI</span></span>
-                  : l==="Glow-Up" ? <span className="flex items-center gap-1.5">✨{l}<span className="text-[9px] bg-purple-500 text-white px-1.5 py-0.5 rounded-full font-bold">NEW</span></span>
-                  : l}
+                {l==="Skin Test" ? <span className="flex items-center gap-1.5">🔬 {l}<span className="text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">AI</span></span> : l}
               </button>
             </li>
           ))}
@@ -424,11 +418,154 @@ function ProductModal({ p, onClose, onAddToCart, onWishlist, wishlisted }) {
 //          → JSON skin report
 //              → Results + product recommendations
 //
+
+
+// ════════════════════════════════════════════════════════════
+//  AI SKIN TEST PAGE
+//  Landing → 2 option cards:
+//    1. "Start Free Skin Test"  → quiz flow (5 Qs + photo + result)
+//    2. "AI Glow-Up"            → image upload + before/after slider
+// ════════════════════════════════════════════════════════════
 function SkinTestPage({ onBuy, products }) {
-  const [step,       setStep]       = useState(0);
+  // null = landing, "quiz" = skin test flow, "glowup" = glow-up flow
+  const [mode, setMode] = useState(null);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pt-24 pb-16 px-4">
+      {mode === null   && <AISkinLanding setMode={setMode} />}
+      {mode === "quiz" && <QuizFlow onBuy={onBuy} products={products} onBack={() => setMode(null)} />}
+      {mode === "glowup" && <GlowUpFlow onBack={() => setMode(null)} />}
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   LANDING — 2 big cards
+──────────────────────────────────────────────────────────── */
+function AISkinLanding({ setMode }) {
+  return (
+    <div className="max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="text-center mb-10 fu">
+        <span className="inline-block bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
+          Powered by Replicate AI · nano-banana
+        </span>
+        <h1 style={{fontFamily:"'Cormorant Garamond',serif"}}
+          className="text-4xl md:text-5xl font-bold text-emerald-950 leading-tight mb-3">
+          AI <span className="italic text-emerald-600">Skin Intelligence</span>
+        </h1>
+        <p className="text-slate-500 text-base max-w-xl mx-auto">
+          Two powerful AI tools — choose what you need today.
+        </p>
+      </div>
+
+      {/* ── 2 option cards ── */}
+      <div className="grid md:grid-cols-2 gap-6">
+
+        {/* Card 1 — Skin Test */}
+        <button
+          onClick={() => setMode("quiz")}
+          className="group text-left bg-white rounded-3xl border-2 border-emerald-100 hover:border-emerald-400 shadow-sm hover:shadow-2xl hover:shadow-emerald-100 transition-all duration-300 overflow-hidden active:scale-[0.98]"
+        >
+          {/* Colour band */}
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-500 px-7 pt-8 pb-6 relative overflow-hidden">
+            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10"/>
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/10"/>
+            <div className="relative">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                🔬
+              </div>
+              <span className="text-[11px] bg-white/25 text-white font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                Quiz + AI Analysis
+              </span>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="px-7 py-6">
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif"}}
+              className="text-2xl font-bold text-emerald-950 mb-2">
+              Start Free Skin Test
+            </h2>
+            <p className="text-slate-500 text-sm leading-relaxed mb-5">
+              Answer 5 quick questions about your skin. Our AI builds your personalised routine, identifies key ingredients, and recommends the right Prottiva products.
+            </p>
+            <ul className="flex flex-col gap-2 mb-6">
+              {[["⏱️","Takes just 2 minutes"],["📋","5 personalised skin questions"],["🌿","Ingredient & routine guide"],["🛍️","Product recommendations"]].map(([icon,text]) => (
+                <li key={text} className="flex items-center gap-2.5 text-sm text-slate-600">
+                  <span>{icon}</span>{text}
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-400">Free · No signup needed</span>
+              <span className="bg-emerald-600 group-hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all group-hover:shadow-lg group-hover:shadow-emerald-200">
+                Start Test →
+              </span>
+            </div>
+          </div>
+        </button>
+
+        {/* Card 2 — Glow-Up */}
+        <button
+          onClick={() => setMode("glowup")}
+          className="group text-left bg-white rounded-3xl border-2 border-purple-100 hover:border-purple-400 shadow-sm hover:shadow-2xl hover:shadow-purple-100 transition-all duration-300 overflow-hidden active:scale-[0.98]"
+        >
+          {/* Colour band */}
+          <div className="bg-gradient-to-br from-purple-500 to-pink-500 px-7 pt-8 pb-6 relative overflow-hidden">
+            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10"/>
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/10"/>
+            <div className="relative">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                ✨
+              </div>
+              <span className="text-[11px] bg-white/25 text-white font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                Upload Photo · AI Enhance
+              </span>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="px-7 py-6">
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif"}}
+              className="text-2xl font-bold text-slate-900 mb-2">
+              AI Face Glow-Up
+            </h2>
+            <p className="text-slate-500 text-sm leading-relaxed mb-5">
+              Upload a selfie and our AI enhances your natural radiance — smoother skin, better lighting, radiant finish. Same you, just elevated. ✨
+            </p>
+            <ul className="flex flex-col gap-2 mb-6">
+              {[["📸","Upload any selfie or skin photo"],["🤖","AI enhances naturally, keeps identity"],["⟺","Before & After drag comparison"],["⬇️","Download your result instantly"]].map(([icon,text]) => (
+                <li key={text} className="flex items-center gap-2.5 text-sm text-slate-600">
+                  <span>{icon}</span>{text}
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-400">Free · Photo never stored</span>
+              <span className="bg-gradient-to-r from-purple-600 to-pink-600 group-hover:from-purple-700 group-hover:to-pink-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all group-hover:shadow-lg group-hover:shadow-purple-200">
+                Try Glow-Up →
+              </span>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <p className="text-center text-xs text-slate-400 mt-8">
+        Both features run on <strong>Replicate · google/nano-banana</strong> · Secure · Private
+      </p>
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   QUIZ FLOW  (5 questions + optional selfie + AI result)
+──────────────────────────────────────────────────────────── */
+function QuizFlow({ onBuy, products, onBack }) {
+  const [step,       setStep]       = useState(1);
   const [answers,    setAnswers]    = useState({});
-  const [imgData,    setImgData]    = useState(null);   // base64 string (no prefix)
-  const [imgPreview, setImgPreview] = useState(null);   // object URL for <img>
+  const [imgData,    setImgData]    = useState(null);
+  const [imgPreview, setImgPreview] = useState(null);
   const [imgMime,    setImgMime]    = useState("image/jpeg");
   const [result,     setResult]     = useState(null);
   const [loading,    setLoading]    = useState(false);
@@ -436,7 +573,6 @@ function SkinTestPage({ onBuy, products }) {
   const [err,        setErr]        = useState("");
   const fileRef = useRef();
 
-  // Loading message cycle so user knows backend is working
   const LOADING_MSGS = [
     "Sending skin data to AI…",
     "Analysing your skin type…",
@@ -466,7 +602,6 @@ function SkinTestPage({ onBuy, products }) {
     reader.onload = ev => {
       const dataUrl = ev.target.result;
       setImgPreview(dataUrl);
-      // Strip "data:image/...;base64," prefix — backend wants pure base64
       setImgData(dataUrl.split(",")[1]);
     };
     reader.readAsDataURL(file);
@@ -474,20 +609,9 @@ function SkinTestPage({ onBuy, products }) {
 
   async function analyse() {
     setLoading(true); setErr("");
-
-    // Build answers dict with human-readable question labels
     const answersDict = {};
-    SKIN_Q.forEach(q => {
-      answersDict[q.q] = answers[q.id] || "Not answered";
-    });
-
-    // Payload for backend /skin-analysis
-    const payload = {
-      answers: answersDict,
-      image_base64: imgData || null,
-      image_mime:   imgData ? imgMime : null,
-    };
-
+    SKIN_Q.forEach(q => { answersDict[q.q] = answers[q.id] || "Not answered"; });
+    const payload = { answers: answersDict, image_base64: imgData || null, image_mime: imgData ? imgMime : null };
     try {
       const res = await api.post("/skin-analysis", payload);
       setResult(res.data);
@@ -499,206 +623,204 @@ function SkinTestPage({ onBuy, products }) {
     setLoading(false);
   }
 
+  function fullReset() {
+    setStep(1); setAnswers({}); setResult(null);
+    setImgData(null); setImgPreview(null); setErr("");
+  }
+
   const recP = result && products?.length
     ? products.filter(p => result.recommendedProductIds?.includes(p.id)).slice(0,3)
     : [];
 
-  if (step===0) return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pt-28 pb-16 px-4 flex items-center justify-center">
-      <div className="max-w-lg w-full text-center fu">
-        <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-3xl flex items-center justify-center text-5xl mx-auto mb-6 shadow-2xl shadow-emerald-200 fl">🔬</div>
-        <span className="inline-block bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
-          Powered by Replicate AI · nano-banana
-        </span>
-        <h1 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-4xl md:text-5xl font-bold text-emerald-950 mb-4 leading-tight">
-          AI Skin Analysis<br/><span className="italic text-emerald-600">Personalised for you</span>
-        </h1>
-        <p className="text-slate-600 text-base leading-relaxed mb-8">
-          Answer 5 quick questions + optionally upload a selfie. Our AI vision model analyses your skin profile and builds your personalised Prottiva routine.
-        </p>
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {[["⏱️","2 minutes"],["📸","Vision AI analysis"],["🎁","Free & personalised"]].map(([e,t]) => (
-            <div key={t} className="bg-white rounded-2xl p-3 shadow-sm border border-emerald-100">
-              <div className="text-2xl mb-1">{e}</div><p className="text-xs font-medium text-slate-600">{t}</p>
-            </div>
-          ))}
-        </div>
-        <button onClick={()=>setStep(1)} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-base px-10 py-4 rounded-full shadow-xl shadow-emerald-200 hover:-translate-y-0.5 transition-all active:scale-95">
-          Start Free Skin Test →
-        </button>
-      </div>
-    </div>
+  /* Back button shared */
+  const BackBtn = ({ onClick }) => (
+    <button onClick={onClick} className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-emerald-600 transition-colors mb-7">
+      ← Back to AI Skin Test
+    </button>
   );
 
-  if (step>=1 && step<=5) {
-    const q = SKIN_Q[step-1];
+  /* ── Questions ── */
+  if (step >= 1 && step <= 5) {
+    const q = SKIN_Q[step - 1];
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white pt-28 pb-16 px-4 flex items-center justify-center">
-        <div className="max-w-xl w-full fu">
-          <div className="mb-8">
-            <div className="flex justify-between text-xs text-slate-400 font-medium mb-2"><span>Question {step} of 5</span><span>{Math.round((step/5)*100)}%</span></div>
-            <div className="w-full bg-slate-100 rounded-full h-2">
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-500" style={{width:(step/5*100)+"%"}}/>
-            </div>
+      <div className="max-w-xl mx-auto fu">
+        <BackBtn onClick={step === 1 ? onBack : () => setStep(s=>s-1)}/>
+        <div className="mb-8">
+          <div className="flex justify-between text-xs text-slate-400 font-medium mb-2">
+            <span>Question {step} of 5</span><span>{Math.round((step/5)*100)}%</span>
           </div>
-          <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl md:text-3xl font-bold text-emerald-950 mb-6">{q.q}</h2>
-          <div className="flex flex-col gap-3">
-            {q.opts.map(o => (
-              <button key={o} onClick={()=>pick(q.id,o)}
-                className={`text-left px-5 py-4 rounded-2xl border-2 text-sm font-medium transition-all ${answers[q.id]===o?"border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm":"border-slate-200 bg-white text-slate-700 hover:border-emerald-300"}`}>
-                {answers[q.id]===o?"✓ ":""}{o}
-              </button>
-            ))}
+          <div className="w-full bg-slate-100 rounded-full h-2">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-500" style={{width:(step/5*100)+"%"}}/>
           </div>
-          <div className="flex gap-3 mt-8">
-            {step>1 && <button onClick={()=>setStep(s=>s-1)} className="px-6 py-3 rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:border-emerald-300">← Back</button>}
-            <button disabled={!answers[q.id]} onClick={()=>setStep(s=>s+1)}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-full transition-all disabled:opacity-40 active:scale-95">
-              Next →
+        </div>
+        <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl md:text-3xl font-bold text-emerald-950 mb-6">{q.q}</h2>
+        <div className="flex flex-col gap-3">
+          {q.opts.map(o => (
+            <button key={o} onClick={() => pick(q.id, o)}
+              className={`text-left px-5 py-4 rounded-2xl border-2 text-sm font-medium transition-all ${answers[q.id]===o?"border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm":"border-slate-200 bg-white text-slate-700 hover:border-emerald-300"}`}>
+              {answers[q.id]===o ? "✓ " : ""}{o}
             </button>
-          </div>
+          ))}
+        </div>
+        <div className="flex gap-3 mt-8">
+          {step > 1 && (
+            <button onClick={() => setStep(s=>s-1)} className="px-6 py-3 rounded-full border border-slate-200 text-slate-600 text-sm font-medium hover:border-emerald-300 transition-all">← Back</button>
+          )}
+          <button
+            disabled={!answers[q.id]}
+            onClick={() => setStep(s => s+1)}
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-full transition-all disabled:opacity-40 active:scale-95">
+            {step === 5 ? "Next — Upload Photo →" : "Next →"}
+          </button>
         </div>
       </div>
     );
   }
 
-  if (step===6) return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-white pt-28 pb-16 px-4 flex items-center justify-center">
-      <div className="max-w-lg w-full fu">
-        <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-3xl font-bold text-emerald-950 mb-2 text-center">
-          Upload a Selfie <span className="italic text-emerald-600">(Optional)</span>
-        </h2>
-        <p className="text-slate-500 text-sm text-center mb-8">Our AI analyses your actual skin for a more accurate report. Your photo is never stored.</p>
-
-        <div onClick={()=>fileRef.current.click()}
-          className={`border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all mb-6 ${imgPreview?"border-emerald-400 bg-emerald-50":"border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50"}`}>
-          {imgPreview ? (
-            <div className="flex flex-col items-center gap-3">
-              <img src={imgPreview} alt="preview" className="w-40 h-40 object-cover rounded-2xl shadow-lg"/>
-              <p className="text-emerald-600 font-semibold text-sm">✓ Photo ready — AI will analyse this</p>
-              <button onClick={e=>{e.stopPropagation();setImgPreview(null);setImgData(null);}} className="text-xs text-rose-400 hover:text-rose-600 underline">Remove</button>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-3 text-slate-400">
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-4xl">📸</div>
-              <p className="font-medium text-slate-600">Tap to upload selfie or skin close-up</p>
-              <p className="text-xs">JPG, PNG · Max 5 MB · Front-facing recommended</p>
-            </div>
-          )}
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile}/>
-        </div>
-
-        {err && <p className="text-rose-500 text-sm bg-rose-50 px-4 py-3 rounded-2xl mb-4 text-center">{err}</p>}
-        <div className="flex gap-3">
-          <button onClick={()=>setStep(5)} className="px-6 py-3 rounded-full border border-slate-200 text-slate-600 text-sm font-medium">← Back</button>
-          <button onClick={analyse} disabled={loading} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 rounded-full disabled:opacity-60 flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-200">
-            {loading
-              ? <><Spinner sm/><span className="text-sm">{loadingMsg || "Analysing…"}</span></>
-              : imgData ? "🔬 Analyse Skin + Photo" : "🔬 Analyse My Skin"}
-          </button>
-        </div>
-        {!loading && (
-          <button onClick={analyse} disabled={loading} className="w-full text-center text-xs text-emerald-600 hover:underline mt-3 disabled:opacity-40">
-            {imgData ? "Skip photo & use quiz answers only →" : "Analyse without photo →"}
-          </button>
-        )}
-        {loading && (
-          <div className="mt-5 bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
-            <p className="text-xs text-emerald-600 font-semibold text-center mb-2">⏳ AI is working — this may take 30–90 seconds</p>
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              {["Reading quiz","Analysing skin type","Checking concerns","Selecting ingredients","Building routine"].map((t,i) => (
-                <span key={t} style={{animationDelay:i*0.3+"s"}} className="text-xs bg-emerald-100 text-emerald-600 px-2.5 py-1 rounded-full font-medium pu">{t}</span>
-              ))}
-            </div>
+  /* ── Photo upload ── */
+  if (step === 6) return (
+    <div className="max-w-lg mx-auto fu">
+      <BackBtn onClick={() => setStep(5)}/>
+      <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-3xl font-bold text-emerald-950 mb-1 text-center">
+        Upload a Selfie <span className="italic text-emerald-600">(Optional)</span>
+      </h2>
+      <p className="text-slate-400 text-sm text-center mb-8">
+        Our AI analyses your actual skin for a more accurate report. Your photo is never stored.
+      </p>
+      <div onClick={() => fileRef.current.click()}
+        className={`border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all mb-5 ${imgPreview?"border-emerald-400 bg-emerald-50":"border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/40"}`}>
+        {imgPreview ? (
+          <div className="flex flex-col items-center gap-3">
+            <img src={imgPreview} alt="preview" className="w-40 h-40 object-cover rounded-2xl shadow-lg"/>
+            <p className="text-emerald-600 font-semibold text-sm">✓ Photo ready — AI will analyse this</p>
+            <button onClick={e=>{e.stopPropagation();setImgPreview(null);setImgData(null);}}
+              className="text-xs text-rose-400 hover:text-rose-600 underline">Remove photo</button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-3 text-slate-400">
+            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-4xl">📸</div>
+            <p className="font-medium text-slate-600">Tap to upload selfie or skin close-up</p>
+            <p className="text-xs">JPG, PNG · Max 5 MB · Front-facing recommended</p>
           </div>
         )}
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile}/>
       </div>
+      {err && <p className="text-rose-500 text-sm bg-rose-50 px-4 py-3 rounded-2xl mb-4 text-center">{err}</p>}
+      <button onClick={analyse} disabled={loading}
+        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl disabled:opacity-60 flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-emerald-200 transition-all mb-3">
+        {loading
+          ? <><Spinner sm/><span className="text-sm">{loadingMsg || "Analysing…"}</span></>
+          : imgData ? "🔬 Analyse Skin + Photo" : "🔬 Analyse My Skin"}
+      </button>
+      {!loading && (
+        <button onClick={analyse} className="w-full text-center text-xs text-emerald-600 hover:underline transition-colors">
+          {imgData ? "Skip photo & use quiz answers only →" : "Analyse without photo →"}
+        </button>
+      )}
+      {loading && (
+        <div className="mt-5 bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+          <p className="text-xs text-emerald-600 font-semibold text-center mb-2">⏳ AI is working — this may take 30–90 seconds</p>
+          <div className="flex flex-wrap gap-1.5 justify-center">
+            {["Reading quiz","Analysing skin type","Checking concerns","Selecting ingredients","Building routine"].map((t,i) => (
+              <span key={t} style={{animationDelay:i*0.3+"s"}} className="text-xs bg-emerald-100 text-emerald-600 px-2.5 py-1 rounded-full font-medium pu">{t}</span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 
-  if (step===7 && result) return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pt-24 pb-16 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Score card */}
-        <div className="bg-gradient-to-br from-emerald-700 to-teal-700 rounded-3xl p-7 text-white mb-7 fu relative overflow-hidden">
-          <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5"/>
-          <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-white/5"/>
-          <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <div className="w-24 h-24 rounded-full bg-white/20 flex flex-col items-center justify-center flex-shrink-0 border-2 border-white/30">
-              <span style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-4xl font-bold leading-none">{result.skinScore}</span>
-              <span className="text-emerald-200 text-xs">/100</span>
-            </div>
-            <div>
-              <Chip text={"Skin Type: "+result.skinType} color="teal"/>
-              <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl md:text-3xl font-bold mt-2 mb-1">{result.headline}</h2>
-              {result.imageObservation && <p className="text-emerald-100 text-sm bg-white/10 px-3 py-1.5 rounded-full inline-block mb-1">📸 {result.imageObservation}</p>}
-              <p className="text-emerald-200 text-sm mt-1">💡 {result.lifestyleTip}</p>
-            </div>
+  /* ── Result ── */
+  if (step === 7 && result) return (
+    <div className="max-w-4xl mx-auto">
+      {/* Score card */}
+      <div className="bg-gradient-to-br from-emerald-700 to-teal-700 rounded-3xl p-7 text-white mb-7 fu relative overflow-hidden">
+        <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5"/>
+        <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-white/5"/>
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <div className="w-24 h-24 rounded-full bg-white/20 flex flex-col items-center justify-center flex-shrink-0 border-2 border-white/30">
+            <span style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-4xl font-bold leading-none">{result.skinScore}</span>
+            <span className="text-emerald-200 text-xs">/100</span>
+          </div>
+          <div>
+            <Chip text={"Skin Type: "+result.skinType} color="teal"/>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl md:text-3xl font-bold mt-2 mb-1">{result.headline}</h2>
+            {result.imageObservation && <p className="text-emerald-100 text-sm bg-white/10 px-3 py-1.5 rounded-full inline-block mb-1">📸 {result.imageObservation}</p>}
+            <p className="text-emerald-200 text-sm mt-1">💡 {result.lifestyleTip}</p>
           </div>
         </div>
+      </div>
 
-        <div className="grid md:grid-cols-2 gap-5 mb-5">
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 fu d1">
-            <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-xl font-bold text-emerald-900 mb-4">🎯 Top Concerns</h3>
-            {result.topConcerns?.map(c => (
-              <div key={c} className="flex items-center gap-2.5 text-sm text-slate-700 bg-rose-50 px-4 py-2.5 rounded-xl mb-2">
-                <span className="w-2 h-2 rounded-full bg-rose-400 flex-shrink-0"/>{c}
+      <div className="grid md:grid-cols-2 gap-5 mb-5">
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 fu d1">
+          <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-xl font-bold text-emerald-900 mb-4">🎯 Top Concerns</h3>
+          {result.topConcerns?.map(c => (
+            <div key={c} className="flex items-center gap-2.5 text-sm text-slate-700 bg-rose-50 px-4 py-2.5 rounded-xl mb-2">
+              <span className="w-2 h-2 rounded-full bg-rose-400 flex-shrink-0"/>{c}
+            </div>
+          ))}
+        </div>
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 fu d2">
+          <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-xl font-bold text-emerald-900 mb-4">🌿 Ingredient Guide</h3>
+          <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-2">Seek these:</p>
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {result.ingredientsToSeek?.map(i => <span key={i} className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">{i}</span>)}
+          </div>
+          <p className="text-[10px] uppercase tracking-widest text-rose-500 font-bold mb-2">Avoid these:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {result.ingredientsToAvoid?.map(i => <span key={i} className="text-xs bg-rose-100 text-rose-600 px-3 py-1 rounded-full font-medium">{i}</span>)}
+          </div>
+        </div>
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 fu d3 md:col-span-2">
+          <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-xl font-bold text-emerald-900 mb-4">📋 Your Personalised Routine</h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {[["☀️ Morning", result.routine?.morning||[]], ["🌙 Evening", result.routine?.evening||[]]].map(([t,steps]) => (
+              <div key={t} className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4">
+                <p className="font-semibold text-emerald-800 mb-3 text-sm">{t}</p>
+                {steps.map((s,i) => (
+                  <div key={i} className="flex items-center gap-2.5 text-sm text-slate-700 mb-2">
+                    <span className="w-6 h-6 rounded-full bg-emerald-200 text-emerald-700 text-xs font-bold flex items-center justify-center flex-shrink-0">{i+1}</span>{s}
+                  </div>
+                ))}
               </div>
             ))}
           </div>
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 fu d2">
-            <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-xl font-bold text-emerald-900 mb-4">🌿 Ingredient Guide</h3>
-            <p className="text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-2">Seek these:</p>
-            <div className="flex flex-wrap gap-1.5 mb-3">{result.ingredientsToSeek?.map(i => <span key={i} className="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-medium">{i}</span>)}</div>
-            <p className="text-[10px] uppercase tracking-widest text-rose-500 font-bold mb-2">Avoid these:</p>
-            <div className="flex flex-wrap gap-1.5">{result.ingredientsToAvoid?.map(i => <span key={i} className="text-xs bg-rose-100 text-rose-600 px-3 py-1 rounded-full font-medium">{i}</span>)}</div>
-          </div>
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-100 fu d3 md:col-span-2">
-            <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-xl font-bold text-emerald-900 mb-4">📋 Your Personalised Routine</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {[["☀️ Morning",result.routine?.morning||[]],["🌙 Evening",result.routine?.evening||[]]].map(([t,steps]) => (
-                <div key={t} className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4">
-                  <p className="font-semibold text-emerald-800 mb-3 text-sm">{t}</p>
-                  {steps.map((s,i) => (
-                    <div key={i} className="flex items-center gap-2.5 text-sm text-slate-700 mb-2">
-                      <span className="w-6 h-6 rounded-full bg-emerald-200 text-emerald-700 text-xs font-bold flex items-center justify-center flex-shrink-0">{i+1}</span>{s}
-                    </div>
-                  ))}
+        </div>
+      </div>
+
+      {recP.length > 0 && (
+        <div className="fu d4 mb-8">
+          <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl font-bold text-emerald-900 mb-5">✨ Recommended For You</h3>
+          <div className="grid sm:grid-cols-3 gap-5">
+            {recP.map(p => (
+              <div key={p.id} className="bg-white rounded-3xl p-5 shadow-sm border border-emerald-100 card-hover">
+                <div className="h-24 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center overflow-hidden mb-3">
+                  {p.image_url ? <img src={p.image_url} className="h-full object-contain p-2" alt=""/> : <span className="text-5xl">{p.emoji||"🧴"}</span>}
                 </div>
-              ))}
-            </div>
+                <Chip text={p.tag||"New"} color="green"/>
+                <h4 style={{fontFamily:"'Cormorant Garamond',serif"}} className="font-bold text-emerald-900 mt-2 mb-1 text-lg">{p.name}</h4>
+                <p className="text-xs text-slate-500 mb-3">{p.description||p.desc||""}</p>
+                <div className="flex items-center justify-between">
+                  <span style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-xl font-bold text-emerald-700">₹{p.price}</span>
+                  <button onClick={()=>onBuy(p)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition-all active:scale-95">Buy Now</button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+      )}
 
-        {recP.length>0 && (
-          <div className="fu d4">
-            <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl font-bold text-emerald-900 mb-5">✨ Recommended For You</h3>
-            <div className="grid sm:grid-cols-3 gap-5">
-              {recP.map(p => (
-                <div key={p.id} className="bg-white rounded-3xl p-5 shadow-sm border border-emerald-100 card-hover">
-                  <div className="h-24 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center overflow-hidden mb-3">
-                    {p.image_url ? <img src={p.image_url} className="h-full object-contain p-2" alt=""/> : <span className="text-5xl">{p.emoji||"🧴"}</span>}
-                  </div>
-                  <Chip text={p.tag||"New"} color="green"/>
-                  <h4 style={{fontFamily:"'Cormorant Garamond',serif"}} className="font-bold text-emerald-900 mt-2 mb-1 text-lg">{p.name}</h4>
-                  <p className="text-xs text-slate-500 mb-3">{p.description||p.desc||""}</p>
-                  <div className="flex items-center justify-between">
-                    <span style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-xl font-bold text-emerald-700">₹{p.price}</span>
-                    <button onClick={()=>onBuy(p)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition-all active:scale-95">Buy Now</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        <div className="text-center mt-10 flex flex-col items-center gap-3">
-          <span className="text-xs text-slate-400 bg-slate-100 px-4 py-1.5 rounded-full">
-            Analysis powered by Replicate · google/nano-banana
-          </span>
-          <button
-            onClick={()=>{setStep(0);setAnswers({});setResult(null);setImgData(null);setImgPreview(null);setErr("");}}
-            className="text-emerald-600 hover:text-emerald-800 text-sm font-medium underline underline-offset-4">
-            Retake the skin test
+      <div className="text-center flex flex-col items-center gap-3">
+        <span className="text-xs text-slate-400 bg-slate-100 px-4 py-1.5 rounded-full">
+          Analysis powered by Replicate · google/nano-banana
+        </span>
+        <div className="flex items-center gap-5">
+          <button onClick={fullReset} className="text-emerald-600 hover:text-emerald-800 text-sm font-medium underline underline-offset-4 transition-colors">
+            Retake skin test
+          </button>
+          <span className="text-slate-300 text-xs">|</span>
+          <button onClick={onBack} className="text-slate-400 hover:text-slate-600 text-sm font-medium underline underline-offset-4 transition-colors">
+            ← AI Skin Test home
           </button>
         </div>
       </div>
@@ -708,16 +830,16 @@ function SkinTestPage({ onBuy, products }) {
   return null;
 }
 
-// ════════════════════════════════════════════════════════════
-//  AI GLOW-UP PAGE  ← GLOWUP_API backend
-// ════════════════════════════════════════════════════════════
-function GlowUpPage() {
-  const [originalFile,   setOriginalFile]   = useState(null);
-  const [originalPreview,setOriginalPreview]= useState(null);
-  const [glowedUrl,      setGlowedUrl]      = useState(null);
-  const [loading,        setLoading]        = useState(false);
-  const [err,            setErr]            = useState("");
-  const [sliderPos,      setSliderPos]      = useState(50);
+/* ────────────────────────────────────────────────────────────
+   GLOW-UP FLOW  (image upload + before/after drag slider)
+──────────────────────────────────────────────────────────── */
+function GlowUpFlow({ onBack }) {
+  const [originalFile,    setOriginalFile]    = useState(null);
+  const [originalPreview, setOriginalPreview] = useState(null);
+  const [glowedUrl,       setGlowedUrl]       = useState(null);
+  const [loading,         setLoading]         = useState(false);
+  const [err,             setErr]             = useState("");
+  const [sliderPos,       setSliderPos]       = useState(50);
   const fileRef  = useRef();
   const wrapRef  = useRef();
   const dragging = useRef(false);
@@ -728,9 +850,7 @@ function GlowUpPage() {
     if (file.size > 10*1024*1024) { setErr("File too large — max 10 MB."); return; }
     setOriginalFile(file);
     setOriginalPreview(URL.createObjectURL(file));
-    setGlowedUrl(null);
-    setErr("");
-    setSliderPos(50);
+    setGlowedUrl(null); setErr(""); setSliderPos(50);
   }
 
   async function runGlowUp() {
@@ -739,147 +859,138 @@ function GlowUpPage() {
     const fd = new FormData();
     fd.append("image", originalFile);
     try {
-      const res = await api.post("/glowup", fd, {headers:{"Content-Type":"multipart/form-data"}, timeout: 120000});
+      const res = await api.post("/glowup", fd, { headers:{"Content-Type":"multipart/form-data"}, timeout: 120000 });
       setGlowedUrl(res.data.imageUrl);
     } catch(e) {
-      const detail = e.response?.data?.detail || e.message || "Server error — please try again.";
-      setErr("Glow-up failed: " + detail);
+      setErr("Glow-up failed: " + (e.response?.data?.detail || e.message || "Server error — try again."));
     }
     setLoading(false);
   }
 
-  // Drag-to-compare slider
   function onMouseMove(e) {
     if (!dragging.current || !wrapRef.current) return;
     const rect = wrapRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width * 100;
-    setSliderPos(Math.max(2, Math.min(98, x)));
+    setSliderPos(Math.max(2, Math.min(98, (e.clientX - rect.left) / rect.width * 100)));
   }
   function onTouchMove(e) {
     if (!wrapRef.current) return;
     const rect = wrapRef.current.getBoundingClientRect();
-    const x = (e.touches[0].clientX - rect.left) / rect.width * 100;
-    setSliderPos(Math.max(2, Math.min(98, x)));
+    setSliderPos(Math.max(2, Math.min(98, (e.touches[0].clientX - rect.left) / rect.width * 100)));
+  }
+  function resetAll() {
+    setOriginalFile(null); setOriginalPreview(null);
+    setGlowedUrl(null); setErr(""); setSliderPos(50);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 pt-28 pb-16 px-4">
-      <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
+      {/* Back */}
+      <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-purple-600 transition-colors mb-7 fu">
+        ← Back to AI Skin Test
+      </button>
 
-        {/* Header */}
-        <div className="text-center mb-10 fu">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-5 shadow-2xl shadow-purple-200 fl">✨</div>
-          <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-3">Powered by Replicate AI</span>
-          <h1 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-4xl md:text-5xl font-bold text-slate-900 mb-3 leading-tight">
-            AI Face <span className="italic text-purple-600">Glow-Up</span>
-          </h1>
-          <p className="text-slate-600 text-base max-w-xl mx-auto leading-relaxed">
-            Upload a selfie and our AI will enhance your natural glow — smoother skin, better lighting, radiant finish. Same you, just elevated. ✨
-          </p>
-        </div>
+      {/* Header */}
+      <div className="text-center mb-8 fu">
+        <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-xl shadow-purple-200 fl">✨</div>
+        <span className="inline-block bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-3">
+          Powered by Replicate AI
+        </span>
+        <h1 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-3xl md:text-4xl font-bold text-slate-900 mb-2 leading-tight">
+          AI Face <span className="italic text-purple-600">Glow-Up</span>
+        </h1>
+        <p className="text-slate-500 text-sm max-w-lg mx-auto leading-relaxed">
+          Upload a selfie — our AI enhances your natural glow. Same you, just elevated. ✨
+        </p>
+      </div>
 
-        {/* Upload area */}
-        <div className="bg-white rounded-3xl p-8 shadow-sm border border-purple-100 mb-6 fu d1">
-          <div onClick={()=>fileRef.current.click()}
-            className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${originalPreview?"border-purple-400 bg-purple-50":"border-slate-200 hover:border-purple-400 hover:bg-purple-50/50"}`}>
-            {originalPreview ? (
-              <div className="flex flex-col items-center gap-3">
-                <img src={originalPreview} alt="original" className="w-36 h-36 object-cover rounded-2xl shadow-lg"/>
-                <p className="text-purple-600 font-semibold text-sm">✓ Photo ready</p>
-                <button onClick={e=>{e.stopPropagation();setOriginalFile(null);setOriginalPreview(null);setGlowedUrl(null);}} className="text-xs text-rose-400 hover:text-rose-600 underline">Remove & upload another</button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-3 text-slate-400">
-                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-4xl">🤳</div>
-                <p className="font-medium text-slate-600">Tap to upload your selfie</p>
-                <p className="text-xs">JPG, PNG, WebP · Max 10 MB · Face clearly visible</p>
-              </div>
-            )}
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onFile}/>
-          </div>
-
-          {err && <p className="text-rose-500 text-sm bg-rose-50 px-4 py-3 rounded-xl mt-4 text-center">{err}</p>}
-
-          <button onClick={runGlowUp} disabled={!originalFile||loading}
-            className="mt-5 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-2xl disabled:opacity-50 flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-purple-200 text-base">
-            {loading
-              ? <><Spinner sm/>Processing your glow-up… (may take ~30s)</>
-              : <>✨ Generate My Glow-Up</>}
-          </button>
-
-          <p className="text-xs text-slate-400 text-center mt-3">Your photo is processed securely and never stored on our servers.</p>
-        </div>
-
-        {/* Before / After compare slider */}
-        {glowedUrl && originalPreview && (
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-purple-100 fu">
-            <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl font-bold text-slate-800 mb-1 text-center">Before & After</h3>
-            <p className="text-xs text-slate-400 text-center mb-5">← Drag to compare →</p>
-
-            <div ref={wrapRef} className="compare-wrapper select-none"
-              style={{height:"420px"}}
-              onMouseDown={()=>{dragging.current=true;}}
-              onMouseUp={()=>{dragging.current=false;}}
-              onMouseMove={onMouseMove}
-              onMouseLeave={()=>{dragging.current=false;}}
-              onTouchMove={onTouchMove}>
-
-              {/* Before (full width) */}
-              <img src={originalPreview} alt="Before" className="w-full h-full object-cover"/>
-
-              {/* After (clipped) */}
-              <div className="compare-after" style={{clipPath:`inset(0 ${100-sliderPos}% 0 0)`}}>
-                <img src={glowedUrl} alt="After" className="w-full h-full object-cover"/>
-              </div>
-
-              {/* Handle */}
-              <div className="compare-handle" style={{left:`${sliderPos}%`}}>
-                <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"36px",height:"36px",background:"white",borderRadius:"50%",boxShadow:"0 2px 12px rgba(0,0,0,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",fontWeight:"bold",color:"#7c3aed"}}>
-                  ⟺
-                </div>
-              </div>
-
-              {/* Labels */}
-              <span className="absolute bottom-3 left-4 bg-black/50 text-white text-xs font-bold px-3 py-1 rounded-full pointer-events-none">BEFORE</span>
-              <span className="absolute bottom-3 right-4 bg-purple-600/80 text-white text-xs font-bold px-3 py-1 rounded-full pointer-events-none">AFTER ✨</span>
-            </div>
-
-            <div className="mt-5 flex gap-3 justify-center">
-              <a href={glowedUrl} download="prottiva-glowup.jpg"
-                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2.5 rounded-full text-sm transition-all active:scale-95 flex items-center gap-2">
-                ⬇️ Download Result
-              </a>
-              <button onClick={()=>{setOriginalFile(null);setOriginalPreview(null);setGlowedUrl(null);}}
-                className="border border-slate-200 text-slate-600 hover:border-purple-300 hover:text-purple-600 font-semibold px-6 py-2.5 rounded-full text-sm transition-all">
-                Try Another Photo
+      {/* Upload card */}
+      <div className="bg-white rounded-3xl p-7 shadow-sm border border-purple-100 mb-5 fu d1">
+        <div onClick={() => fileRef.current.click()}
+          className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${originalPreview?"border-purple-400 bg-purple-50":"border-slate-200 hover:border-purple-400 hover:bg-purple-50/40"}`}>
+          {originalPreview ? (
+            <div className="flex flex-col items-center gap-3">
+              <img src={originalPreview} alt="original" className="w-36 h-36 object-cover rounded-2xl shadow-lg"/>
+              <p className="text-purple-600 font-semibold text-sm">✓ Photo ready</p>
+              <button onClick={e=>{e.stopPropagation();resetAll();}} className="text-xs text-rose-400 hover:text-rose-600 underline">
+                Remove & upload another
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Tips */}
-        <div className="grid grid-cols-3 gap-4 mt-6 fu d2">
-          {[["💡","Best results with","good natural lighting"],["🤳","Face clearly","visible in frame"],["🔒","Privacy first","photo never stored"]].map(([e,t,d])=>(
-            <div key={t} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-purple-100">
-              <div className="text-2xl mb-2">{e}</div>
-              <p className="text-xs font-semibold text-slate-700">{t}</p>
-              <p className="text-xs text-slate-400">{d}</p>
+          ) : (
+            <div className="flex flex-col items-center gap-3 text-slate-400">
+              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-4xl">🤳</div>
+              <p className="font-medium text-slate-600">Tap to upload your selfie</p>
+              <p className="text-xs">JPG, PNG, WebP · Max 10 MB · Face clearly visible</p>
             </div>
-          ))}
+          )}
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onFile}/>
         </div>
+
+        {err && <p className="text-rose-500 text-sm bg-rose-50 px-4 py-3 rounded-xl mt-4 text-center">{err}</p>}
+
+        <button onClick={runGlowUp} disabled={!originalFile||loading}
+          className="mt-5 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-2xl disabled:opacity-50 flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-purple-200 text-base">
+          {loading ? <><Spinner sm/>Processing your glow-up… (~30–90s)</> : <>✨ Generate My Glow-Up</>}
+        </button>
+        <p className="text-xs text-slate-400 text-center mt-3">Your photo is processed securely and never stored.</p>
+      </div>
+
+      {/* Before / After compare slider */}
+      {glowedUrl && originalPreview && (
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-purple-100 fu">
+          <h3 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl font-bold text-slate-800 mb-1 text-center">Before & After</h3>
+          <p className="text-xs text-slate-400 text-center mb-5">← Drag to compare →</p>
+          <div ref={wrapRef}
+            className="compare-wrapper select-none" style={{height:"420px"}}
+            onMouseDown={()=>{dragging.current=true;}}
+            onMouseUp={()=>{dragging.current=false;}}
+            onMouseMove={onMouseMove}
+            onMouseLeave={()=>{dragging.current=false;}}
+            onTouchMove={onTouchMove}>
+            <img src={originalPreview} alt="Before" className="w-full h-full object-cover"/>
+            <div className="compare-after" style={{clipPath:`inset(0 ${100-sliderPos}% 0 0)`}}>
+              <img src={glowedUrl} alt="After" className="w-full h-full object-cover"/>
+            </div>
+            <div className="compare-handle" style={{left:`${sliderPos}%`}}>
+              <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"36px",height:"36px",background:"white",borderRadius:"50%",boxShadow:"0 2px 12px rgba(0,0,0,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",fontWeight:"bold",color:"#7c3aed"}}>
+                ⟺
+              </div>
+            </div>
+            <span className="absolute bottom-3 left-4 bg-black/50 text-white text-xs font-bold px-3 py-1 rounded-full pointer-events-none">BEFORE</span>
+            <span className="absolute bottom-3 right-4 bg-purple-600/80 text-white text-xs font-bold px-3 py-1 rounded-full pointer-events-none">AFTER ✨</span>
+          </div>
+          <div className="mt-5 flex gap-3 justify-center">
+            <a href={glowedUrl} download="prottiva-glowup.jpg"
+              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2.5 rounded-full text-sm transition-all active:scale-95 flex items-center gap-2">
+              ⬇️ Download Result
+            </a>
+            <button onClick={resetAll} className="border border-slate-200 text-slate-600 hover:border-purple-300 hover:text-purple-600 font-semibold px-6 py-2.5 rounded-full text-sm transition-all">
+              Try Another Photo
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tips */}
+      <div className="grid grid-cols-3 gap-4 mt-5 fu d2">
+        {[["💡","Best results","good natural lighting"],["🤳","Face clearly","visible in frame"],["🔒","Privacy first","photo never stored"]].map(([e,t,d])=>(
+          <div key={t} className="bg-white rounded-2xl p-4 text-center shadow-sm border border-purple-100">
+            <div className="text-2xl mb-2">{e}</div>
+            <p className="text-xs font-semibold text-slate-700">{t}</p>
+            <p className="text-xs text-slate-400">{d}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-// ════════════════════════════════════════════════════════════
-//  HOME PAGE
-// ════════════════════════════════════════════════════════════
+
+
 function HomePage({ setPage, onBuy, onWishlist, wishlist, products }) {
   const testimonials = [
     {name:"Priya S.",loc:"Mumbai",text:"Hydra Boost Serum transformed my dry skin in 2 weeks. My face feels like glass!",rating:5,emoji:"👩"},
     {name:"Rahul M.",loc:"Delhi",text:"The AI skin test recommended the perfect routine for my oily skin. Acne is gone!",rating:5,emoji:"👨"},
-    {name:"Anita K.",loc:"Bangalore",text:"The Glow-Up AI is magical! The before/after was unreal.",rating:5,emoji:"👩‍💼"},
+    {name:"Anita K.",loc:"Bangalore",text:"The AI skin test nailed my routine. My skin is glowing after 3 weeks!",rating:5,emoji:"👩‍💼"},
   ];
 
   return (
@@ -898,7 +1009,6 @@ function HomePage({ setPage, onBuy, onWishlist, wishlist, products }) {
             <div className="flex flex-wrap gap-4 mb-6">
               <button onClick={()=>setPage("Shop")} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-8 py-4 rounded-full shadow-xl shadow-emerald-200 hover:-translate-y-0.5 transition-all active:scale-95">Shop Now →</button>
               <button onClick={()=>setPage("Skin Test")} className="border-2 border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-semibold px-8 py-4 rounded-full transition-all active:scale-95">🔬 AI Skin Test</button>
-              <button onClick={()=>setPage("Glow-Up")} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold px-8 py-4 rounded-full shadow-xl shadow-purple-200 hover:-translate-y-0.5 transition-all active:scale-95">✨ Try Glow-Up</button>
             </div>
             <div className="flex items-center gap-4 flex-wrap">
               {["🌿 Vegan","🔬 Dermatologist Tested","🇮🇳 Made in India","🐰 Cruelty-free"].map(b => (
@@ -918,18 +1028,22 @@ function HomePage({ setPage, onBuy, onWishlist, wishlist, products }) {
       </section>
 
       {/* Feature banners */}
-      <section className="grid md:grid-cols-2">
-        <div className="bg-gradient-to-r from-emerald-700 to-teal-700 py-14 px-8 flex flex-col gap-4">
-          <span className="text-4xl">🔬</span>
-          <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl font-bold text-white">AI Skin Analysis</h2>
-          <p className="text-emerald-100 text-sm leading-relaxed">5 questions + selfie = your personalised routine, ingredients guide & product picks.</p>
-          <button onClick={()=>setPage("Skin Test")} className="self-start bg-white text-emerald-700 font-bold px-6 py-3 rounded-full hover:bg-emerald-50 transition-all active:scale-95 text-sm">Take Free Test →</button>
-        </div>
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 py-14 px-8 flex flex-col gap-4">
-          <span className="text-4xl">✨</span>
-          <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-2xl font-bold text-white">AI Face Glow-Up</h2>
-          <p className="text-purple-100 text-sm leading-relaxed">Upload a selfie — our AI enhances your natural radiance with a stunning before/after comparison.</p>
-          <button onClick={()=>setPage("Glow-Up")} className="self-start bg-white text-purple-700 font-bold px-6 py-3 rounded-full hover:bg-purple-50 transition-all active:scale-95 text-sm">Try Glow-Up →</button>
+      <section className="bg-gradient-to-r from-emerald-700 to-teal-700 py-16 px-8">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8">
+          <div className="flex flex-col gap-4 flex-1">
+            <span className="text-5xl">🔬</span>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif"}} className="text-3xl font-bold text-white">AI Skin Analysis</h2>
+            <p className="text-emerald-100 text-base leading-relaxed max-w-md">5 quick questions + optional selfie = your personalised skincare routine, ingredient guide & product picks. Free, instant, science-backed.</p>
+            <button onClick={()=>setPage("Skin Test")} className="self-start bg-white text-emerald-700 font-bold px-8 py-3 rounded-full hover:bg-emerald-50 transition-all active:scale-95 text-sm shadow-lg">Take Free Skin Test →</button>
+          </div>
+          <div className="hidden md:grid grid-cols-2 gap-3 flex-shrink-0">
+            {[["⏱️","2 minutes"],["📸","Photo analysis"],["🌿","Routine guide"],["🛍️","Product picks"]].map(([e,t])=>(
+              <div key={t} className="bg-white/15 rounded-2xl px-4 py-3 text-center">
+                <div className="text-2xl mb-1">{e}</div>
+                <p className="text-emerald-100 text-xs font-medium">{t}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -1532,7 +1646,7 @@ function Footer({ setPage }) {
         <div>
           <h4 className="font-semibold text-emerald-100 mb-4 text-xs uppercase tracking-widest">Navigate</h4>
           <ul className="flex flex-col gap-2.5">
-            {["Home","Shop","Skin Test","Glow-Up","About","Contact"].map(l => (
+            {["Home","Shop","Skin Test","About","Contact"].map(l => (
               <li key={l}><button onClick={()=>setPage(l)} className="text-emerald-300 hover:text-white text-sm transition-colors">{l}</button></li>
             ))}
           </ul>
@@ -1647,7 +1761,6 @@ export default function App() {
           {page==="Home"      && <HomePage   setPage={navigate} {...sharedProps}/>}
           {page==="Shop"      && <ShopPage   {...sharedProps}/>}
           {page==="Skin Test" && <SkinTestPage onBuy={onBuy} products={products}/>}
-          {page==="Glow-Up"   && <GlowUpPage/>}
           {page==="About"     && <AboutPage/>}
           {page==="Contact"   && <ContactPage/>}
           {page==="Cart"      && <CartPage cart={cart} setCart={setCart} setPage={navigate}/>}
