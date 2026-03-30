@@ -448,7 +448,7 @@ function AISkinLanding({ setMode }) {
       {/* Header */}
       <div className="text-center mb-10 fu">
         <span className="inline-block bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
-          Powered by Replicate AI · nano-banana
+          Powered by prottiva nutrition
         </span>
         <h1 style={{fontFamily:"'Cormorant Garamond',serif"}}
           className="text-4xl md:text-5xl font-bold text-emerald-950 leading-tight mb-3">
@@ -520,7 +520,7 @@ function AISkinLanding({ setMode }) {
                 ✨
               </div>
               <span className="text-[11px] bg-white/25 text-white font-bold uppercase tracking-widest px-3 py-1 rounded-full">
-                Upload Photo · AI Enhance
+                Upload Photo · AI analysies
               </span>
             </div>
           </div>
@@ -529,10 +529,10 @@ function AISkinLanding({ setMode }) {
           <div className="px-7 py-6">
             <h2 style={{fontFamily:"'Cormorant Garamond',serif"}}
               className="text-2xl font-bold text-slate-900 mb-2">
-              AI Face Glow-Up
+              AI test your skin
             </h2>
             <p className="text-slate-500 text-sm leading-relaxed mb-5">
-              Upload a selfie and our AI enhances your natural radiance — smoother skin, better lighting, radiant finish. Same you, just elevated. ✨
+              Upload a selfie and our AI test your skin and give result. ✨
             </p>
             <ul className="flex flex-col gap-2 mb-6">
               {[["📸","Upload any selfie or skin photo"],["🤖","AI enhances naturally, keeps identity"],["⟺","Before & After drag comparison"],["⬇️","Download your result instantly"]].map(([icon,text]) => (
@@ -544,7 +544,7 @@ function AISkinLanding({ setMode }) {
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-400">Free · Photo never stored</span>
               <span className="bg-gradient-to-r from-purple-600 to-pink-600 group-hover:from-purple-700 group-hover:to-pink-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all group-hover:shadow-lg group-hover:shadow-purple-200">
-                Try Glow-Up →
+                analyse →
               </span>
             </div>
           </div>
@@ -552,7 +552,7 @@ function AISkinLanding({ setMode }) {
       </div>
 
       <p className="text-center text-xs text-slate-400 mt-8">
-        Both features run on <strong>Replicate · google/nano-banana</strong> · Secure · Private
+        Both features run on <strong>prottiva-nutrition</strong> · Secure · Private
       </p>
     </div>
   );
